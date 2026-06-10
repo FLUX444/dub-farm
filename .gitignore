@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.codex-venv/
+
+# Downloaded model weights (keep separate from src/dub_farm/models Python package)
+weights/
+llm-models/*
+!llm-models/README.md
+models/
+model/
+hf-cache/
+
+# Pipeline artifacts
+.dub-farm/
+*.dubbed.mp4
+test.mp4
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Bundled FFmpeg (download locally — binaries exceed GitHub size limits)
+tools/ffmpeg-*/
+tools/*.zip

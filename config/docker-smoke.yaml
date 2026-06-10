@@ -1,0 +1,50 @@
+# Smoke-test config for the Windows -> Docker/WSL2 -> vLLM path.
+# Demucs is skipped (native Windows torchaudio issues). Run Whisper and Qwen
+# containers separately to stay within 8 GB VRAM.
+
+proxy:
+  enabled: true
+  host: 127.0.0.1
+  port: 2080
+  scheme: http
+  no_proxy:
+    - 127.0.0.1
+    - localhost
+    - ::1
+
+pipeline:
+  isolate_heavy_workers: true
+  isolated_steps:
+    - transcribe
+    - tts
+  unload_models: true
+
+separation:
+  backend: skip
+
+transcription:
+  backend: vllm-openai
+  vllm_url: http://127.0.0.1:8000/v1
+  vllm_model: whisper-v3
+  fallback_backend: transformers
+  language: null
+
+translation:
+  backend: openai
+  fallback_backend: transformers
+  openai_url: http://127.0.0.1:5001/v1
+  openai_api_key_env: OPENAI_API_KEY
+  model: qwen-translate
+  transformers_model: Qwen/Qwen2.5-0.5B-Instruct
+  target_lang: ru
+  max_timing_iterations: 1
+
+scene:
+  detect_enabled: true
+  vlm_enabled: false
+
+tts:
+  backend: qwen3-tts
+  mode: custom_voice
+  models_dir: weights/tts
+  speaker: Ryan

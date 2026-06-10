@@ -1,0 +1,55 @@
+services:
+  whisper-vllm:
+    profiles: ["whisper", "all"]
+    image: dub-farm-vllm-audio:latest
+    init: true
+    command:
+      - --model
+      - ${WHISPER_MODEL:-openai/whisper-large-v3}
+      - --served-model-name
+      - ${WHISPER_SERVED_MODEL:-whisper-v3}
+      - --gpu-memory-utilization
+      - ${WHISPER_GPU_MEMORY:-0.8}
+    ports:
+      - "8000:8000"
+    ipc: host
+    volumes:
+      - ./models:/models
+      - ./hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  qwen-translate:
+    profiles: ["qwen", "all"]
+    image: vllm/vllm-openai:latest
+    init: true
+    command:
+      - --model
+      - ${QWEN_MODEL:-Qwen/Qwen2.5-1.5B-Instruct}
+      - --served-model-name
+      - ${QWEN_SERVED_MODEL:-qwen-translate}
+      - --gpu-memory-utilization
+      - ${QWEN_GPU_MEMORY:-0.70}
+      - --max-model-len
+      - ${QWEN_MAX_MODEL_LEN:-512}
+      - --max-num-seqs
+      - "1"
+      - --enforce-eager
+    ports:
+      - "5001:8000"
+    ipc: host
+    volumes:
+      - ./llm-models:/llm-models
+      - ./hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

@@ -1,0 +1,89 @@
+# dub-farm default configuration
+
+proxy:
+  enabled: true
+  host: 127.0.0.1
+  port: 2080
+  scheme: http
+  no_proxy:
+    - 127.0.0.1
+    - localhost
+    - ::1
+
+pipeline:
+  work_dir: ".dub-farm"
+  resume: true
+  unload_models: true
+  isolate_heavy_workers: true
+  isolated_steps:
+    - separate
+    - transcribe
+    - scene_analysis
+    - tts
+  worker_timeout_sec: null
+
+audio:
+  sample_rate: 44100
+  channels: 2
+
+separation:
+  backend: demucs  # demucs | skip
+  model: htdemucs
+  two_stems: vocals
+
+transcription:
+  backend: faster-whisper  # faster-whisper | whisperx | vllm-openai | transformers | skip
+  model: large-v3
+  fallback_backend: transformers
+  vllm_url: http://127.0.0.1:8000/v1
+  vllm_api_key_env: null
+  vllm_model: /models/whisper-v3
+  language: null  # auto-detect if null
+  batch_size: 16
+  compute_type: float16  # float16 | int8 | float32
+  diarize: true
+  min_speakers: 1
+  max_speakers: 10
+
+emotion:
+  enabled: false
+  backend: heuristic  # heuristic | model
+
+scene:
+  detect_enabled: true
+  vlm_enabled: false
+  vlm_frame_interval_sec: 4.0
+
+translation:
+  backend: ollama  # ollama | openai | passthrough
+  source_lang: auto
+  target_lang: ru
+  model: qwen2.5:7b  # 7b лучше для 8GB VRAM
+  ollama_url: http://localhost:11434
+  openai_url: https://api.openai.com/v1
+  openai_api_key_env: OPENAI_API_KEY
+  timing_tolerance_percent: 10
+  max_timing_iterations: 3
+
+tts:
+  backend: qwen3-tts
+  mode: custom_voice  # custom_voice | voice_design | voice_clone
+  model: Qwen/Qwen3-TTS-12Hz-1.7B-CustomVoice
+  models_dir: weights/tts
+  speaker: Ryan
+  speaker_map: {}
+  voice_design_instruct: "Natural film dubbing voice, expressive, clear Russian speech."
+  use_flash_attn: false
+  x_vector_only_clone: false
+
+mix:
+  speech_gain_db: 0.0
+  background_gain_db: 0.0
+  normalize: true
+  target_lufs: -16.0
+
+export:
+  video_codec: libx264
+  audio_codec: aac
+  crf: 23
+  preset: medium

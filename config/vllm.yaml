@@ -1,0 +1,50 @@
+# vLLM configuration for Windows hosts.
+#
+# Do not run vLLM directly in native Windows Python. Start vLLM in Docker or
+# WSL2 Linux and let dub-farm call the OpenAI-compatible HTTP API.
+#
+# Docker example from the project root:
+# docker run --gpus all -p 8000:8000 --ipc=host -v ./models:/models `
+#   vllm/vllm-openai:latest --model /models/whisper-v3 --gpu-memory-utilization 0.8
+#
+# Run:
+# py -m dub_farm.cli run video.mp4 --config config/vllm.yaml
+
+proxy:
+  enabled: true
+  host: 127.0.0.1
+  port: 2080
+  scheme: http
+  no_proxy:
+    - 127.0.0.1
+    - localhost
+    - ::1
+
+pipeline:
+  isolate_heavy_workers: true
+  isolated_steps:
+    - separate
+    - transcribe
+    - scene_analysis
+    - tts
+  unload_models: true
+
+transcription:
+  backend: vllm-openai
+  vllm_url: http://127.0.0.1:8000/v1
+  vllm_model: whisper-v3
+  fallback_backend: transformers
+  language: null
+
+translation:
+  backend: openai
+  openai_url: http://127.0.0.1:5001/v1
+  openai_api_key_env: OPENAI_API_KEY
+  model: qwen-translate
+  target_lang: ru
+
+tts:
+  backend: qwen3-tts
+  mode: custom_voice
+  model_path: src/dub_farm/models
+  speaker: Ryan
